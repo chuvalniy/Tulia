@@ -3,11 +3,9 @@ import numpy as np
 from src.model import Model
 
 
-class LassoRegression(Model):
+class RidgeRegression(Model):
     """
-    Lasso Regression (L1)
-
-    P.S.: core logic is the same as in Linear Regression (linreg.py), just wanted to remind myself how to code :)
+    Ridge Regression (L2)
     """
 
     def __init__(self, learning_rate: float = 1e-3, alpha: float = 1.0, n_steps: int = 1000, tol: float = 1e-5):
@@ -27,7 +25,7 @@ class LassoRegression(Model):
 
     def fit(self, x: np.ndarray, y: np.ndarray):
         """
-        Train linear regression using Mean-Squared Error with L1 (Lasso) regularization.
+        Train linear regression using Mean-Squared Error with L2 (Ridge) regularization.
         :param x: Training data.
         :param y: Target feature.
         :return:
@@ -42,19 +40,19 @@ class LassoRegression(Model):
 
         prev_error = None
         for _ in range(self.n_steps):
-            # Calculate error function using mean-squared method with L1 regularization.
+            # Calculate error function using mean-squared method with L2 regularization.
             mean_squared = 1 / (2 * n_examples) * np.sum((x_copy @ self.theta - y) ** 2)
-            regularization = self.alpha * np.sum(np.abs(self.theta))
-
+            regularization = self.alpha * np.sum(self.theta ** 2)
             self.error = mean_squared + regularization
+
             # Terminate training process if function converges.
-            if prev_error and np.isclose(self.error, prev_error, rtol=self.tol, atol=self.tol):
+            if prev_error and np.isclose(self.error, prev_error, atol=self.tol, rtol=self.tol):
                 return
             prev_error = self.error
 
             # Find derivatives for both least squared and regularization terms from the error function.
             dtheta_mean_squared = 1 / n_examples * np.sum((x_copy @ self.theta - y)[:, np.newaxis] * x_copy, axis=0)
-            dtheta_regularization = self.alpha * np.sum(np.sign(self.theta))
+            dtheta_regularization = self.alpha * 2 * np.sum(self.theta)
             dtheta = dtheta_mean_squared + dtheta_regularization
 
             # Update theta value by making gradient descent step.
