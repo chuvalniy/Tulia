@@ -154,10 +154,9 @@ class DecisionTreeClassifier(Model):
         unique_values, class_counts = np.unique(y, return_counts=True)
 
         if len(unique_values) <= 1:
-          return 0
+            return 0
 
         class_probs = class_counts / n_samples
-
 
         entropy = 0.0
         for prob in class_probs:
