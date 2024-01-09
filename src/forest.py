@@ -5,15 +5,17 @@ from tree import DecisionTreeClassifier
 
 
 class RandomForestClassifier(Model):
-    def __init__(self, n_trees: int = 100, max_depth: int = 3, min_samples_split: int = 2):
+    def __init__(self, n_trees: int = 100, max_depth: int = 3, min_samples_split: int = 2, max_features: float = 1.0):
         """
         :param n_trees: Number of decision trees.
         :param max_depth: Maximum depth of a decision tree.
         :param min_samples_split: Minimum number of samples to split data into right and left nodes.
+        :param max_features: Percentage of features to use for training.
         """
         self.n_trees = n_trees
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
+        self.max_features = max_features
 
         self.decision_trees = None
 
@@ -27,7 +29,11 @@ class RandomForestClassifier(Model):
         self.decision_trees = []
 
         for _ in range(self.n_trees):
-            decision_tree = DecisionTreeClassifier(max_depth=self.max_depth, min_samples_split=self.min_samples_split)
+            decision_tree = DecisionTreeClassifier(
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                max_features=self.max_features
+            )
             x_new, y_new = self._bootstrap_dataset(x, y)
 
             decision_tree.fit(x_new, y_new)
