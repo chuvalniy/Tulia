@@ -35,13 +35,15 @@ class DecisionTreeClassifier(Model):
     Decision Tree for a binary classification.
     """
 
-    def __init__(self, max_depth: int = 3, min_samples_split: int = 2):
+    def __init__(self, max_depth: int = 3, min_samples_split: int = 2, max_features: float = 1.0):
         """
         :param max_depth: Maximum depth of a decision tree.
         :param min_samples_split: Minimum number of samples to split data into right and left nodes.
+        :param max_features: Percentage of features to use for training.
         """
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
+        self.max_features = max_features
 
         self.root = None
 
@@ -55,6 +57,8 @@ class DecisionTreeClassifier(Model):
         # Create new root node.
         self.root = _DecisionTreeNode()
 
+        feature_idxs = self._select_features(x)
+
         # Create queue to traverse through a decision tree using breadth-first search.
         queue = [(self.root, x, y)]
         for depth in range(self.max_depth):
@@ -63,7 +67,7 @@ class DecisionTreeClassifier(Model):
                 curr_node, data, targets = queue.pop(0)
                 n_samples, n_classes = targets.shape[0], len(np.unique(targets))
 
-                feature_idx, threshold = self._find_split(data, targets)
+                feature_idx, threshold = self._find_split(data, targets, feature_idxs)
                 # Update the current node and create left and right nodes.
                 curr_node.threshold = threshold
                 curr_node.feature = feature_idx
@@ -86,20 +90,33 @@ class DecisionTreeClassifier(Model):
                 left_data, left_targets = data[mask], targets[mask]
                 queue.append((curr_node.left, left_data, left_targets))
 
-    def _find_split(self, x: np.ndarray, y: np.ndarray) -> (int, float):
+    def _select_features(self, x: np.ndarray) -> np.ndarray:
+        """
+        Randomly select features to train the model.
+        :param x: Training data.
+        :return: Selected features (as indices).
+        """
+        _, n_features = x.shape
+        n_features_reduced = int(np.round(n_features * self.max_features))
+
+        feature_idxs = np.random.choice(a=n_features, size=n_features_reduced, replace=False)
+
+        return feature_idxs
+
+    def _find_split(self, x: np.ndarray, y: np.ndarray, feature_idxs: np.ndarray) -> (int, float):
         """
         Find the best data split using information gain by iterating over each column and sample in that column of the
         training data.
         :param x: Training data.
         :param y: Targets.
+        :param feature_idxs: Features to use in training.
         :return: (Index of the best feature, Threshold of the best feature)
         """
-        n_samples, n_features = x.shape
 
         best_feature_idx, best_threshold = None, None
         best_gain = 0.0
-        for i in range(n_features):
-            x_col = x[:, i]
+        for feat_idx in feature_idxs:
+            x_col = x[:, feat_idx]
 
             thresholds = np.unique(x_col)  # Get all possible values of 'x' column.
             for threshold in thresholds:
@@ -107,7 +124,7 @@ class DecisionTreeClassifier(Model):
 
                 if gain > best_gain:
                     best_gain = gain
-                    best_feature_idx = i
+                    best_feature_idx = feat_idx
                     best_threshold = threshold
 
         return best_feature_idx, best_threshold
