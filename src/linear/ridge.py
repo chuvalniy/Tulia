@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.base import Model
+from .linreg import LinearRegression
 
 
-class RidgeRegression(Model):
+class RidgeRegression(LinearRegression):
     """
     Ridge Regression (L2)
     """
@@ -12,61 +12,39 @@ class RidgeRegression(Model):
         """
         :param learning_rate: Learning rate for gradient descent.
         :param n_steps: Number of gradient descent steps.
-        :param alpha: Regularization strength for L1.
-        :param tol: Tolerance value to terminate training process if function converges.
+        :param alpha: Regularization strength for L2.
+        :param tol: Tolerance value to terminate a training process if function converges.
         """
-        self.learning_rate = learning_rate
+        super().__init__(learning_rate=learning_rate, n_steps=n_steps, tol=tol)
+
         self.alpha = alpha
-        self.n_steps = n_steps
-        self.tol = tol
 
-        self.error = 0.0
-        self.theta = None
-
-    def fit(self, x: np.ndarray, y: np.ndarray):
+    def _calculate_error(self, x: np.ndarray, y: np.ndarray) -> float:
         """
-        Train linear regression using Mean-Squared Error with L2 (Ridge) regularization.
+        Find mean-squared error with L2 regularization.
         :param x: Training data.
-        :param y: Target feature.
-        :return:
+        :param y: Targets.
+        :return: Mean-squared error with L2 regularization.
         """
-        n_examples, n_features = x.shape
+        n_examples, _ = x.shape
 
-        # Consider bias by adding one extra parameter.
-        self.theta = np.random.randn(n_features + 1)
+        mean_squared = 1 / (2 * n_examples) * np.sum((x @ self.theta - y) ** 2)
+        regularization = self.alpha * np.sum(self.theta ** 2)
 
-        bias_term = np.ones((n_examples, 1))
-        x_copy = np.concatenate((x, bias_term), axis=1)
+        error = mean_squared + regularization
+        return error
 
-        prev_error = None
-        for _ in range(self.n_steps):
-            # Calculate error function using mean-squared method with L2 regularization.
-            mean_squared = 1 / (2 * n_examples) * np.sum((x_copy @ self.theta - y) ** 2)
-            regularization = self.alpha * np.sum(self.theta ** 2)
-            self.error = mean_squared + regularization
-
-            # Terminate training process if function converges.
-            if prev_error and np.isclose(self.error, prev_error, atol=self.tol, rtol=self.tol):
-                return
-            prev_error = self.error
-
-            # Find derivatives for both least squared and regularization terms from the error function.
-            dtheta_mean_squared = 1 / n_examples * np.sum((x_copy @ self.theta - y)[:, np.newaxis] * x_copy, axis=0)
-            dtheta_regularization = self.alpha * 2 * np.sum(self.theta)
-            dtheta = dtheta_mean_squared + dtheta_regularization
-
-            # Update theta value by making gradient descent step.
-            self.theta = self.theta - dtheta * self.learning_rate
-
-    def predict(self, x: np.ndarray) -> np.ndarray:
+    def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
-        Predict target feature using theta parameters.
-        :param x: Test data.
-        :return: Test predictions.
+        Find gradient of a loss function with respect to theta.
+        :param x: Training data.
+        :param y: Targets.
+        :return: Gradient with respect to theta.
         """
-        n_examples, n_features = x.shape
+        n_examples, _ = x.shape
 
-        bias_term = np.ones((n_examples, 1))
-        x_copy = np.concatenate((x, bias_term), axis=1)
+        dtheta_mean_squared = 1 / n_examples * np.sum((x @ self.theta - y)[:, np.newaxis] * x, axis=0)
+        dtheta_regularization = self.alpha * 2 * np.sum(self.theta)
 
-        return x_copy @ self.theta
+        dtheta = dtheta_mean_squared + dtheta_regularization
+        return dtheta

@@ -6,15 +6,13 @@ from src.base import Model
 
 
 class _Linear(Model):
-    def __init__(self, learning_rate: float = 1e-3, alpha: float = 1.0, n_steps: int = 1000, tol: float = 1e-5):
+    def __init__(self, learning_rate: float = 1e-3, n_steps: int = 1000, tol: float = 1e-5):
         """
         :param learning_rate: Learning rate for gradient descent.
         :param n_steps: Number of gradient descent steps.
-        :param alpha: Regularization strength for L1.
         :param tol: Tolerance value to terminate a training process if function converges.
         """
         self.learning_rate = learning_rate
-        self.alpha = alpha
         self.n_steps = n_steps
         self.tol = tol
 
@@ -63,12 +61,35 @@ class _Linear(Model):
         bias_term = np.ones((n_examples, 1))
         x_copy = np.concatenate((x, bias_term), axis=1)
 
-        return x_copy @ self.theta
+        predictions = self._calculate_predictions(x_copy)
+
+        return predictions
+
+    @abstractmethod
+    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculate predictions for input data.
+        :param x: Input data.
+        :return: Predictions.
+        """
+        pass
 
     @abstractmethod
     def _calculate_error(self, x: np.ndarray, y: np.ndarray) -> float:
+        """
+        Calculate loss function.
+        :param x: Training data.
+        :param y: Targets.
+        :return: Error.
+        """
         pass
 
     @abstractmethod
     def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """
+        Find gradient of a loss function with respect to theta.
+        :param x: Training data.
+        :param y: Targets.
+        :return: Gradient with respect to theta.
+        """
         pass
