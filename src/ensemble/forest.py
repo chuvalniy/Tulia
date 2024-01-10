@@ -2,9 +2,8 @@ from abc import abstractmethod
 
 import numpy as np
 
-from model import Model
-from tree import DecisionTreeClassifier, DecisionTree, DecisionTreeRegressor
-
+from src.base import Model
+from src.tree import DecisionTreeClassifier, DecisionTree, DecisionTreeRegressor
 
 class _RandomForest(Model):
     """

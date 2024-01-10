@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -8,6 +8,7 @@ class Model(ABC):
     Interface to define machine learning models.
     """
 
+    @abstractmethod
     def fit(self, x: np.ndarray, y: np.ndarray):
         """
         Train model based on input data.
@@ -17,6 +18,7 @@ class Model(ABC):
         """
         pass
 
+    @abstractmethod
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predict scores for input data.

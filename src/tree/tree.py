@@ -3,7 +3,7 @@ from typing import Union
 
 import numpy as np
 
-from model import Model
+from src.base import Model
 
 
 class _DecisionTreeNode:

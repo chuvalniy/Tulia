@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.model import Model
+from src.base import Model
 
 
 class RidgeRegression(Model):
