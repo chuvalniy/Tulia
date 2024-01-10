@@ -1,55 +1,36 @@
 import numpy as np
 
-from src.base import Model
+from .linear import _Linear
 
 
-class LinearRegression(Model):
+class LinearRegression(_Linear):
     """
     Vanilla Linear Regression.
     """
 
-    def __init__(self, learning_rate: float = 1e-3, n_steps: int = 1000):
+    def _calculate_error(self, x: np.ndarray, y: np.ndarray) -> float:
         """
-        :param learning_rate: Learning rate for gradient descent.
-        :param n_steps: Number of gradient descent steps.
-        """
-        self.theta = None
-        self.learning_rate = learning_rate
-
-        self.error = 0.0
-        self.n_steps = n_steps
-
-    def fit(self, x: np.ndarray, y: np.ndarray):
-        """
-        Train linear regression using Mean-Squared Error.
+        Calculate mean-squared error.
         :param x: Training data.
-        :param y: Target feature.
-        :return:
+        :param y: Targets.
+        :return: Mean-squared error.
         """
-        n_examples, n_features = x.shape
+        n_examples, _ = x.shape
 
-        # Consider bias by adding one extra parameter.
-        self.theta = np.random.randn(n_features + 1,)
+        error = 1 / (n_examples * 2) * np.sum((x @ self.theta - y) ** 2)
+        return error
 
-        bias_term = np.ones((n_examples, 1))
-        x_copy = np.concatenate((x, bias_term), axis=1)
-
-        # Training process.
-        for _ in range(self.n_steps):
-            self.error = 1 / (n_examples * 2) * np.sum((x_copy @ self.theta - y) ** 2)
-            dtheta = 1 / n_examples * np.sum((x_copy @ self.theta - y)[:, np.newaxis] * x_copy, axis=0)
-            self.theta = self.theta - self.learning_rate * dtheta
-
-    def predict(self, x: np.ndarray):
+    def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
-        Predict target feature using theta parameters.
-        :param x: Test data.
-        :return: Test predictions.
+        Find gradient of a loss function with respect to theta.
+        :param x: Training data.
+        :param y: Targets.
+        :return: Gradient with respect to theta.
         """
-        n_examples, n_features = x.shape
+        n_examples, _ = x.shape
 
-        # Add bias term for test data.
-        bias_term = np.ones((n_examples, 1))
-        x_copy = np.concatenate((x, bias_term), axis=1)
+        dtheta = 1 / n_examples * np.sum((x @ self.theta - y)[:, np.newaxis] * x, axis=0)
+        return dtheta
 
-        return x_copy @ self.theta
+
+
