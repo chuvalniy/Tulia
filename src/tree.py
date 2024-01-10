@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Union
 
 import numpy as np
@@ -32,7 +33,7 @@ class _DecisionTreeNode:
         return self.prediction is not None
 
 
-class _DecisionTree(Model):
+class DecisionTree(Model):
     """
     Abstract class for a Decision Tree algorithm.
     """
@@ -130,6 +131,7 @@ class _DecisionTree(Model):
 
         return best_feature_idx, best_threshold
 
+    @abstractmethod
     def _initialize_split_quality(self) -> float:
         """
         Interface for a helper function to initialize variable depending on whether
@@ -138,6 +140,7 @@ class _DecisionTree(Model):
         """
         pass
 
+    @abstractmethod
     def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
         """
         Interface for a helper function to compare two split qualities depending on whether
@@ -146,6 +149,7 @@ class _DecisionTree(Model):
         """
         pass
 
+    @abstractmethod
     def _calculate_prediction(self, y: np.ndarray) -> Union[int, float]:
         """
         Find the prediction for a leaf node for a decision tree.
@@ -154,6 +158,7 @@ class _DecisionTree(Model):
         """
         pass
 
+    @abstractmethod
     def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
         """
         Measure the quality of a split.
@@ -189,7 +194,7 @@ class _DecisionTree(Model):
         return self._dfs(x_sample, root.right)
 
 
-class DecisionTreeClassifier(_DecisionTree):
+class DecisionTreeClassifier(DecisionTree):
     """
     Decision Tree for a binary classification.
     """
@@ -270,7 +275,7 @@ class DecisionTreeClassifier(_DecisionTree):
         return curr_split_quality > best_split_quality
 
 
-class DecisionTreeRegressor(_DecisionTree):
+class DecisionTreeRegressor(DecisionTree):
     def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
         """
         Measure the quality of a split using mean-squared error.

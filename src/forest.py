@@ -1,10 +1,16 @@
+from abc import abstractmethod
+
 import numpy as np
 
 from model import Model
-from tree import DecisionTreeClassifier
+from tree import DecisionTreeClassifier, DecisionTree, DecisionTreeRegressor
 
 
-class RandomForestClassifier(Model):
+class _RandomForest(Model):
+    """
+    Abstraction over classification and regression classes.
+    """
+
     def __init__(self, n_trees: int = 100, max_depth: int = 3, min_samples_split: int = 2, max_features: float = 1.0):
         """
         :param n_trees: Number of decision trees.
@@ -29,11 +35,7 @@ class RandomForestClassifier(Model):
         self.decision_trees = []
 
         for _ in range(self.n_trees):
-            decision_tree = DecisionTreeClassifier(
-                max_depth=self.max_depth,
-                min_samples_split=self.min_samples_split,
-                max_features=self.max_features
-            )
+            decision_tree = self._initialize_tree()
             x_new, y_new = self._bootstrap_dataset(x, y)
 
             decision_tree.fit(x_new, y_new)
@@ -49,7 +51,7 @@ class RandomForestClassifier(Model):
         forest_preds = np.array([tree.predict(x) for tree in self.decision_trees])  # Shape is (n_trees, n_samples)
         forest_preds = np.swapaxes(forest_preds, axis1=0, axis2=1)  # Swap axes to be (n_samples, n_trees)
 
-        predictions = np.array([self._find_most_common(tree_pred) for tree_pred in forest_preds])
+        predictions = np.array([self._calculate_prediction(tree_pred) for tree_pred in forest_preds])
         return predictions
 
     def _bootstrap_dataset(self, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray):
@@ -67,7 +69,30 @@ class RandomForestClassifier(Model):
 
         return x_new, y_new
 
-    def _find_most_common(self, y: np.ndarray) -> int:
+    @abstractmethod
+    def _calculate_prediction(self, y: np.ndarray) -> int:
+        """
+        Interface method for calculating prediction.
+        :param y: Targets.
+        :return: Predictions.
+        """
+        pass
+
+    @abstractmethod
+    def _initialize_tree(self) -> DecisionTree:
+        """
+        Create an instance of a decision tree.
+        :return: Decision Tree instance.
+        """
+        pass
+
+
+class RandomForestClassifier(_RandomForest):
+    """
+    Random Forest model for binary classification.
+    """
+
+    def _calculate_prediction(self, y: np.ndarray) -> int:
         """
         Find the most common class in the array of targets.
         :param y: Targets.
@@ -75,3 +100,42 @@ class RandomForestClassifier(Model):
         """
         most_common = np.bincount(y).argmax()
         return most_common
+
+    def _initialize_tree(self) -> DecisionTree:
+        """
+        Create an instance of a decision tree classifier.
+        :return: Decision Tree classifier.
+        """
+        return DecisionTreeClassifier(
+            max_depth=self.max_depth,
+            min_samples_split=self.min_samples_split,
+            max_features=self.max_features
+        )
+
+
+class RandomForestRegressor(_RandomForest):
+    """
+    Random Forest model for regression tasks.
+    """
+
+    def _calculate_prediction(self, y: np.ndarray) -> int:
+        """
+        Find the mean value for an input array.
+        :param y: Targets (leaf node).
+        :return: Mean value of 'y'.
+        """
+        n_samples = y.shape[0]
+
+        mean = np.sum(y) / n_samples  # np.mean() was bugged for some reason.
+        return mean
+
+    def _initialize_tree(self) -> DecisionTree:
+        """
+        Create an instance of decision tree for regression.
+        :return: Decision Tree regressor.
+        """
+        return DecisionTreeRegressor(
+            max_depth=self.max_depth,
+            min_samples_split=self.min_samples_split,
+            max_features=self.max_features
+        )
