@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 
 from model import Model
@@ -105,19 +107,60 @@ class _DecisionTree(Model):
 
     def _find_split(self, x: np.ndarray, y: np.ndarray, feature_idxs: np.ndarray) -> (int, float):
         """
-        Find the best data split.
+        Find the best feature and threshold to split data into two parts.
         :param x: Training data.
         :param y: Targets.
         :param feature_idxs: Features to use in training.
         :return: (Index of the best feature, Threshold of the best feature)
         """
+
+        best_feature_idx, best_threshold = None, None
+        best_split_quality = self._initialize_split_quality()  # Maybe rework in a better way.
+        for feat_idx in feature_idxs:
+            x_col = x[:, feat_idx]
+
+            thresholds = np.unique(x_col)  # Get all possible values of 'x' column.
+            for threshold in thresholds:
+                split_quality = self._calculate_criterion(x_col, y, threshold)
+
+                if self._compare_split_quality(best_split_quality, split_quality):  # Maybe rework in a better way.
+                    best_split_quality = split_quality
+                    best_feature_idx = feat_idx
+                    best_threshold = threshold
+
+        return best_feature_idx, best_threshold
+
+    def _initialize_split_quality(self) -> float:
+        """
+        Interface for a helper function to initialize variable depending on whether
+        it's a classification or regression task.
+        :return:
+        """
         pass
 
-    def _calculate_prediction(self, y: np.ndarray) -> int:
+    def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
+        """
+        Interface for a helper function to compare two split qualities depending on whether
+        it's a classification or regression task.
+        :return:
+        """
+        pass
+
+    def _calculate_prediction(self, y: np.ndarray) -> Union[int, float]:
         """
         Find the prediction for a leaf node for a decision tree.
         :param y: Targets.
         :return: Most common class.
+        """
+        pass
+
+    def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
+        """
+        Measure the quality of a split.
+        :param x_col: One-dimensional array of samples.
+        :param y: Targets.
+        :param threshold: Threshold to split 'x' into left and right sub-arrays.
+        :return: Criterion.
         """
         pass
 
@@ -151,33 +194,7 @@ class DecisionTreeClassifier(_DecisionTree):
     Decision Tree for a binary classification.
     """
 
-    def _find_split(self, x: np.ndarray, y: np.ndarray, feature_idxs: np.ndarray) -> (int, float):
-        """
-        Find the best data split using information gain by iterating over each column and sample in that column of the
-        training data.
-        :param x: Training data.
-        :param y: Targets.
-        :param feature_idxs: Features to use in training.
-        :return: (Index of the best feature, Threshold of the best feature)
-        """
-
-        best_feature_idx, best_threshold = None, None
-        best_gain = 0.0
-        for feat_idx in feature_idxs:
-            x_col = x[:, feat_idx]
-
-            thresholds = np.unique(x_col)  # Get all possible values of 'x' column.
-            for threshold in thresholds:
-                gain = self._calculate_information_gain(x_col, y, threshold)
-
-                if gain > best_gain:
-                    best_gain = gain
-                    best_feature_idx = feat_idx
-                    best_threshold = threshold
-
-        return best_feature_idx, best_threshold
-
-    def _calculate_information_gain(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
+    def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
         """
         Calculates information gain for the data split using parent and conditional entropy.
         :param x_col: One-dimensional array of samples.
@@ -237,3 +254,68 @@ class DecisionTreeClassifier(_DecisionTree):
         """
         most_common = np.bincount(y).argmax()
         return most_common
+
+    def _initialize_split_quality(self) -> float:
+        """
+        Initialize split quality for a classification task.
+        :return: Lowest possible information gain.
+        """
+        return 0.0
+
+    def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
+        """
+        Compare if current split quality is better.
+        :return: Boolean.
+        """
+        return curr_split_quality > best_split_quality
+
+
+class DecisionTreeRegressor(_DecisionTree):
+    def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
+        """
+        Measure the quality of a split using mean-squared error.
+        :param y: Targets.
+        :param threshold: Threshold to split 'x' into left and right sub-arrays.
+        :return: Information gain.
+        """
+
+        mask = x_col > threshold
+
+        # After dividing target into two arrays they can be empty.
+        if len(y[mask]) == 0 or len(y[~mask]) == 0:
+            return float('inf')
+
+        left_data = y[mask]
+        right_data = y[~mask]
+
+        # Calculate MSE for both left and right data split.
+        left_mse = np.mean((left_data - np.mean(left_data)) ** 2)
+        right_mse = np.mean((right_data - np.mean(right_data)) ** 2)
+
+        total_mse = (len(left_data) * left_mse + len(right_data) * right_mse) / (len(left_data) + len(right_data))
+        return total_mse
+
+    def _calculate_prediction(self, y: np.ndarray) -> float:
+        """
+        Find the mean value for a 'y' and use as prediction for a leaf node.
+        :param y: Targets (leaf node).
+        :return: Mean value of 'y'.
+        """
+        n_samples = y.shape[0]
+
+        mean = np.sum(y) / n_samples  # np.mean() was bugged for some reason.
+        return mean
+
+    def _initialize_split_quality(self) -> float:
+        """
+        Initialize split quality for a regression task.
+        :return: Infinity as the highest possible value for an initial error.
+        """
+        return float('inf')
+
+    def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
+        """
+        Compare if the current mean-squared error is lower.
+        :return: Boolean.
+        """
+        return curr_split_quality < best_split_quality
