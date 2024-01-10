@@ -30,9 +30,9 @@ class _DecisionTreeNode:
         return self.prediction is not None
 
 
-class DecisionTreeClassifier(Model):
+class _DecisionTree(Model):
     """
-    Decision Tree for a binary classification.
+    Abstract class for a Decision Tree algorithm.
     """
 
     def __init__(self, max_depth: int = 3, min_samples_split: int = 2, max_features: float = 1.0):
@@ -47,9 +47,22 @@ class DecisionTreeClassifier(Model):
 
         self.root = None
 
+    def _select_features(self, x: np.ndarray) -> np.ndarray:
+        """
+        Randomly select features to train the model.
+        :param x: Training data.
+        :return: Selected features (as indices).
+        """
+        _, n_features = x.shape
+        n_features_reduced = int(np.round(n_features * self.max_features))
+
+        feature_idxs = np.random.choice(a=n_features, size=n_features_reduced, replace=False)
+
+        return feature_idxs
+
     def fit(self, x: np.ndarray, y: np.ndarray):
         """
-        Train a decision tree using an entropy criterion.
+        Train a decision tree using.
         :param x: Training data.
         :param y: Targets.
         :return:
@@ -74,7 +87,7 @@ class DecisionTreeClassifier(Model):
 
                 # Stopping criteria.
                 if (depth == self.max_depth - 1) or (n_classes == 1) or (n_samples < self.min_samples_split):
-                    curr_node.prediction = self._find_most_common(targets)
+                    curr_node.prediction = self._calculate_prediction(targets)
                     continue
 
                 curr_node.left = _DecisionTreeNode()
@@ -90,18 +103,53 @@ class DecisionTreeClassifier(Model):
                 left_data, left_targets = data[mask], targets[mask]
                 queue.append((curr_node.left, left_data, left_targets))
 
-    def _select_features(self, x: np.ndarray) -> np.ndarray:
+    def _find_split(self, x: np.ndarray, y: np.ndarray, feature_idxs: np.ndarray) -> (int, float):
         """
-        Randomly select features to train the model.
+        Find the best data split.
         :param x: Training data.
-        :return: Selected features (as indices).
+        :param y: Targets.
+        :param feature_idxs: Features to use in training.
+        :return: (Index of the best feature, Threshold of the best feature)
         """
-        _, n_features = x.shape
-        n_features_reduced = int(np.round(n_features * self.max_features))
+        pass
 
-        feature_idxs = np.random.choice(a=n_features, size=n_features_reduced, replace=False)
+    def _calculate_prediction(self, y: np.ndarray) -> int:
+        """
+        Find the prediction for a leaf node for a decision tree.
+        :param y: Targets.
+        :return: Most common class.
+        """
+        pass
 
-        return feature_idxs
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        """
+        Predict classes by traversing over the decision tree for every data sample.
+        :param x: Test data.
+        :return: Test predictions.
+        """
+        predictions = [self._dfs(x_sample, self.root) for x_sample in x]
+        return np.array(predictions)
+
+    def _dfs(self, x_sample: np.ndarray, root: _DecisionTreeNode):
+        """
+        Depth-first search traversal over the decision tree.
+        :param x_sample: Sample from the data.
+        :param root: Tree node.
+        :return: Prediction for a sample.
+        """
+        if root.is_lead_node():
+            return root.prediction
+
+        if x_sample[root.feature] > root.threshold:
+            return self._dfs(x_sample, root.left)
+
+        return self._dfs(x_sample, root.right)
+
+
+class DecisionTreeClassifier(_DecisionTree):
+    """
+    Decision Tree for a binary classification.
+    """
 
     def _find_split(self, x: np.ndarray, y: np.ndarray, feature_idxs: np.ndarray) -> (int, float):
         """
@@ -181,7 +229,7 @@ class DecisionTreeClassifier(Model):
 
         return entropy
 
-    def _find_most_common(self, y: np.ndarray) -> int:
+    def _calculate_prediction(self, y: np.ndarray) -> int:
         """
         Find the most common class in the array of targets.
         :param y: Targets.
@@ -189,27 +237,3 @@ class DecisionTreeClassifier(Model):
         """
         most_common = np.bincount(y).argmax()
         return most_common
-
-    def predict(self, x: np.ndarray) -> np.ndarray:
-        """
-        Predict classes by traversing over the decision tree for every data sample.
-        :param x: Test data.
-        :return: Test predictions.
-        """
-        predictions = [self._dfs(x_sample, self.root) for x_sample in x]
-        return np.array(predictions)
-
-    def _dfs(self, x_sample: np.ndarray, root: _DecisionTreeNode):
-        """
-        Depth-first search traversal over the decision tree.
-        :param x_sample: Sample from the data.
-        :param root: Tree node.
-        :return: Prediction for a sample.
-        """
-        if root.is_lead_node():
-            return root.prediction
-
-        if x_sample[root.feature] > root.threshold:
-            return self._dfs(x_sample, root.left)
-
-        return self._dfs(x_sample, root.right)

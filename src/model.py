@@ -23,3 +23,4 @@ class Model(ABC):
         :param x: Test data.
         :return: Test scores.
         """
+        pass
