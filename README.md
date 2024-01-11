@@ -1,6 +1,6 @@
 <div align="center">
 
-[![logo](https://github.com/chuvalniy/scratch-ml/docs/logo.png)]
+![logo](/docs/logo.png)
 
 Scratch ML: a comprehensive machine learning project entirely from scratch, utilizing the power of Python and numpy.
 
