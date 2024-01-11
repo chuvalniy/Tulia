@@ -5,6 +5,7 @@ import numpy as np
 from src.base import Model
 from src.tree import DecisionTreeClassifier, DecisionTree, DecisionTreeRegressor
 
+
 class _RandomForest(Model):
     """
     Abstraction over classification and regression classes.
