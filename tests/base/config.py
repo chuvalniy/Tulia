@@ -25,6 +25,7 @@ def dataset_classification() -> (np.ndarray, np.ndarray):
     # Create a target vector with 100 binary labels
     y = np.random.randint(0, 2, size=100)
 
+    return X, y
 
 def check_fit_predict(model, x: np.ndarray, y: np.ndarray):
     """
