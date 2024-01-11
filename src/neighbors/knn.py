@@ -35,8 +35,8 @@ class KNN(Model):
         """
         euclidian_distance = np.linalg.norm(self._x[:, np.newaxis] - x, axis=2)
 
-        k_nearest = np.argsort(euclidian_distance, axis=0)[:self.k].transpose()  # Shape is (n_test_examples, k)
-        counts = np.apply_along_axis(np.bincount, 1, self._y[k_nearest.T])
+        k_nearest = np.argsort(euclidian_distance, axis=0)[:self.k].transpose()  # Shape is (n_examples, k)
+        counts = np.apply_along_axis(np.bincount, 1, self._y[k_nearest])
         scores = np.argmax(counts, axis=1)
 
         return scores
