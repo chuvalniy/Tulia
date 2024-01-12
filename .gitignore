@@ -3,3 +3,4 @@
 src/__pycache__
 build
 dist
+tulia.egg-info
