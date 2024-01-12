@@ -2,4 +2,4 @@
 .pytest_cache
 src/__pycache__
 build
-scratch_ml.egg-info
+dist
