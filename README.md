@@ -58,5 +58,9 @@ Execute the following command in your project directory to run the tests.
 pytest -v
 ```
 
+## Demonstration
+
+This [demo](/demos) folder contains jupyter-notebooks that compare scikit-learn and Tulia performance.
+
 ## License
-MIT License
+[MIT License](LICENSE)
