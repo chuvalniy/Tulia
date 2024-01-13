@@ -31,12 +31,13 @@ class _Linear(Model):
         # Consider bias by adding one extra parameter.
         self.theta = np.random.randn(n_features + 1)
 
-        bias_term = np.ones((n_examples, 1))
-        x_copy = np.concatenate((x, bias_term), axis=1)
+        # Make transformations to the original dataset (if needed).
+        x_copy = self._prepare_data(x)
+        y_copy = self._prepare_targets(y)
 
         prev_error = None  # Stopping criteria of error is the same.
         for _ in range(self.n_steps):
-            self.error = self._calculate_error(x_copy, y)
+            self.error = self._calculate_error(x_copy, y_copy)
 
             # Terminate a training process if the function converges.
             if prev_error and np.isclose(self.error, prev_error, rtol=self.tol, atol=self.tol):
@@ -44,7 +45,7 @@ class _Linear(Model):
             prev_error = self.error
 
             # Backpropagation over the loss function.
-            dtheta = self._calculate_gradient(x_copy, y)
+            dtheta = self._calculate_gradient(x_copy, y_copy)
 
             # Update theta value by making gradient descent step.
             self.theta = self.theta - dtheta * self.learning_rate
@@ -64,6 +65,27 @@ class _Linear(Model):
         predictions = self._calculate_predictions(x_copy)
 
         return predictions
+
+    def _prepare_data(self, x: np.ndarray) -> np.ndarray:
+        """
+        Add bias term of ones for original training data for concise calculations.
+        :param x: Training data..
+        :return: Transformed training data.
+        """
+        n_examples, _ = x.shape
+
+        bias_term = np.ones((n_examples, 1))
+        x_copy = np.concatenate((x, bias_term), axis=1)
+
+        return x_copy
+
+    def _prepare_targets(self, y: np.ndarray) -> np.ndarray:
+        """
+        Transform targets if needed.
+        :param y: Targets.
+        :return: Transformed targets.
+        """
+        return y
 
     @abstractmethod
     def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
