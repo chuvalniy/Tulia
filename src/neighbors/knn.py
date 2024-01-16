@@ -1,18 +1,21 @@
 import numpy as np
-
+from typing import Union
+from abc import abstractmethod
 from src.base import Model
+from collections import Counter
 
 
-class KNN(Model):
+class _KNN(Model):
     """
-    K-nearest neighbors model.
+    K-nearest neighbors abstract class.
     """
-    def __init__(self, k: int = 3):
+
+    def __init__(self, k_nearest: int = 3):
         """
-        :param k: Number of neighbours.
+        :param k_nearest: Number of neighbours.
         """
 
-        self.k = k
+        self.k_nearest = k_nearest
         self._x = None
         self._y = None
 
@@ -35,12 +38,30 @@ class KNN(Model):
         """
         euclidian_distance = np.linalg.norm(self._x[:, np.newaxis] - x, axis=2)
 
-        k_nearest = np.argsort(euclidian_distance, axis=0)[:self.k].transpose()  # Shape is (n_examples, k)
-        counts = np.apply_along_axis(np.bincount, 1, self._y[k_nearest])
-        scores = np.argmax(counts, axis=1)
+        k_nearest = np.argsort(euclidian_distance, axis=0)[:self.k_nearest].transpose()  # Shape is (n_examples, k)
+        predictions = np.array([self._calculate_predictions(x) for x in self._y[k_nearest]])
+        return predictions
 
-        return scores
+    @abstractmethod
+    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
+        """
+        Calculate prediction for a single sample.
+        :param x: Single data sample (k_nearest)
+        :return:
+        """
+        pass
 
 
+class KNearestClassifier(_KNN):
+    """
+    KNN for binary/multiclass classification.
+    """
 
-
+    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
+        """
+        Find most common neighbor for a data sample.
+        :param x: Single data sample (k_nearest)
+        :return: Most common class.
+        """
+        most_common = np.bincount(x).argmax()
+        return most_common
