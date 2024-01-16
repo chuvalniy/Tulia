@@ -1,15 +1,11 @@
 from abc import abstractmethod
-
 import numpy as np
 
 from src.base import Model
 from src.tree import DecisionTreeRegressor
 
 
-class GradientBoostingRegressor(Model):
-    """
-    Gradient Boosting for regression
-    """
+class _GradientBoosting(Model):
     def __init__(
             self,
             learning_rate: float = 1e-3,
@@ -44,22 +40,42 @@ class GradientBoostingRegressor(Model):
         """
 
         # Initial prediction
-        self.constant_prediction = y.mean()
+        self.constant_prediction = self._calculate_initial_prediction(y)
 
         prediction = self.constant_prediction
         self.trees = []
         for _ in range(self.n_steps):
+            residuals = self._calculate_loss_gradient(y, prediction)
+
             tree = DecisionTreeRegressor(
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
                 max_features=self.max_features
             )
 
-            residuals = prediction - y
             tree.fit(x, residuals)
             prediction = prediction + self.learning_rate * tree.predict(x)
 
             self.trees.append(tree)
+
+    @abstractmethod
+    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
+        """
+        Initial prediction for a gradient boosting.
+        :param y: Targets.
+        :return: Initial predictions.
+        """
+        pass
+
+    @abstractmethod
+    def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
+        """
+        Find gradient for the loss function.
+        :param y: Targets.
+        :param predictions. Prediction to targets.
+        :return: Initial predictions.
+        """
+        pass
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
@@ -75,4 +91,28 @@ class GradientBoostingRegressor(Model):
             predictions = predictions + self.learning_rate * tree.predict(x)
 
         return predictions
+
+
+class GradientBoostingRegressor(_GradientBoosting):
+    """
+    Gradient Boosting for regression
+    """
+
+    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
+        """
+        Find mean value for the targets.
+        :param y: Targets.
+        :return: Initial predictions.
+        """
+        return np.mean(y)
+
+    def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
+        """
+        Find mean value for the targets.
+        :param y: Targets.
+        :return: Initial predictions.
+        """
+        return predictions - y
+
+
 

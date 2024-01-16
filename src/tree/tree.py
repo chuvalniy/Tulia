@@ -29,7 +29,7 @@ class _DecisionTreeNode:
         self.threshold = threshold
         self.prediction = prediction
 
-    def is_lead_node(self):
+    def is_leaf_node(self):
         return self.prediction is not None
 
 
@@ -185,7 +185,7 @@ class DecisionTree(Model):
         :param root: Tree node.
         :return: Prediction for a sample.
         """
-        if root.is_lead_node():
+        if root.is_leaf_node():
             return root.prediction
 
         if x_sample[root.feature] > root.threshold:
@@ -276,6 +276,10 @@ class DecisionTreeClassifier(DecisionTree):
 
 
 class DecisionTreeRegressor(DecisionTree):
+    """
+    Decision Tree for regression based on mean-squared error.
+    """
+
     def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
         """
         Measure the quality of a split using mean-squared error.

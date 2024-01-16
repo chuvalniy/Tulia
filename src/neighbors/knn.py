@@ -1,8 +1,9 @@
-import numpy as np
-from typing import Union
 from abc import abstractmethod
+from typing import Union
+
+import numpy as np
+
 from src.base import Model
-from collections import Counter
 
 
 class _KNN(Model):
@@ -12,7 +13,7 @@ class _KNN(Model):
 
     def __init__(self, k_nearest: int = 3):
         """
-        :param k_nearest: Number of neighbours.
+        :param k_nearest: Number of neighbors.
         """
 
         self.k_nearest = k_nearest
