@@ -65,3 +65,18 @@ class KNearestClassifier(_KNN):
         """
         most_common = np.bincount(x).argmax()
         return most_common
+
+
+class KNearestRegressor(_KNN):
+    """
+    KNN for regression.
+    """
+
+    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
+        """
+        Find the mean value of neighbors for a data sample.
+        :param x: Single data sample (k_nearest)
+        :return: Most common class.
+        """
+        prediction = np.mean(x)
+        return prediction
