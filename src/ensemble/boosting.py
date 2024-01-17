@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 import numpy as np
 
 from src.base import Model
@@ -8,7 +9,7 @@ from src.tree import DecisionTreeRegressor
 class _GradientBoosting(Model):
     def __init__(
             self,
-            learning_rate: float = 1e-3,
+            learning_rate: float = 1e-2,
             n_steps: int = 100,
             max_depth: int = 3,
             min_samples_split: int = 2,
@@ -77,19 +78,21 @@ class _GradientBoosting(Model):
         """
         pass
 
+    @abstractmethod
+    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculate predictions for input data.
+        :param x: Input data.
+        :return: Predictions.
+        """
+
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predict target feature using pretrained boosting trees.
         :param x: Test data.
         :return: Test predictions.
         """
-        n_samples, _ = x.shape
-
-        predictions = np.ones(shape=(n_samples,)) * self.constant_prediction
-
-        for tree in self.trees:
-            predictions = predictions + self.learning_rate * tree.predict(x)
-
+        predictions = self._calculate_predictions(x)
         return predictions
 
 
@@ -108,11 +111,75 @@ class GradientBoostingRegressor(_GradientBoosting):
 
     def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
         """
-        Find mean value for the targets.
+        Calculate gradient of mean-squared error loss.
+        :param predictions: Target predictions.
+        :param y: Targets.
+        :return: Gradient of loss function with respect to predictions.
+        """
+        return y - predictions
+
+    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+        n_samples, _ = x.shape
+
+        predictions = np.ones(n_samples) * self.constant_prediction
+        for tree in self.trees:
+            predictions = predictions + self.learning_rate * tree.predict(x)
+
+        return predictions
+
+
+class GradientBoostingClassifier(_GradientBoosting):
+    """
+    Gradient Boosting for the classification.
+    Uses cross-entropy as loss.
+    """
+
+    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
+        """
+        Find natural logarithm of odds.
         :param y: Targets.
         :return: Initial predictions.
         """
-        return predictions - y
+        return np.zeros_like(y, dtype=np.float64)
 
+    def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
+        """
+        Calculate cross-entropy gradient.
+        :param y: Targets.
+        :return: Gradient of loss function with respect to predictions.
+        """
+        return y - GradientBoostingClassifier.sigmoid(predictions)
 
+    @staticmethod
+    def sigmoid(x: np.ndarray) -> np.ndarray:
+        """
+        Makes input values to be in (0, 1) range.
+        :param x: Input array.
+        :return: Output array of the same shape as an input array.
+        """
+        return 1 / (1 + np.exp(-x))
+
+    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculate targets using prediction probability.
+        :param x: Input array.
+        :return: Predictions.
+        """
+        predictions_proba = self.predict_proba(x)
+        predictions = np.where(predictions_proba >= 0.5, 1, 0)
+        return predictions
+
+    def predict_proba(self, x):
+        """
+        Predict label using sigmoid function.
+        :param x: Input array.
+        :return: Predictions.
+        """
+        n_samples, _ = x.shape
+
+        predictions = np.ones(n_samples) * self.constant_prediction
+        for tree in self.trees:
+            predictions = predictions + self.learning_rate * tree.predict(x)
+
+        return GradientBoostingClassifier.sigmoid(predictions)
 

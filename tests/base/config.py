@@ -55,6 +55,7 @@ def check_fit_predict(model, x: np.ndarray, y: np.ndarray):
     # Fit the model on the mock dataset
     model.fit(x, y)
     preds = model.predict(x)
+    print(preds)
 
     assert isinstance(preds, np.ndarray)
     assert preds.shape == y.shape
