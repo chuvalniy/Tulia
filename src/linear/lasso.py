@@ -1,6 +1,7 @@
 import numpy as np
 
 from .linreg import LinearRegression
+from src.metrics import mean_squared_error
 
 
 class LassoRegression(LinearRegression):
@@ -26,12 +27,12 @@ class LassoRegression(LinearRegression):
         :param y: Targets.
         :return: Mean-squared error with L1 regularization.
         """
-        n_examples, _ = x.shape
+        predictions = x @ self.theta
 
-        mean_squared = 1 / (2 * n_examples) * np.sum((x @ self.theta - y) ** 2)
+        mse = mean_squared_error(y, predictions)
         regularization = self.alpha * np.sum(np.abs(self.theta))
 
-        error = mean_squared + regularization
+        error = mse + regularization
         return error
 
     def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:

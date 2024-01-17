@@ -4,6 +4,7 @@ from typing import Union
 import numpy as np
 
 from src.base import Model
+from src.metrics import mean_squared_error
 
 
 class _DecisionTreeNode:
@@ -298,8 +299,8 @@ class DecisionTreeRegressor(DecisionTree):
         right_data = y[~mask]
 
         # Calculate MSE for both left and right data split.
-        left_mse = np.mean((left_data - np.mean(left_data)) ** 2)
-        right_mse = np.mean((right_data - np.mean(right_data)) ** 2)
+        left_mse = mean_squared_error(left_data, np.mean(left_data)) * 2
+        right_mse = mean_squared_error(right_data, np.mean(right_data)) * 2
 
         total_mse = (len(left_data) * left_mse + len(right_data) * right_mse) / (len(left_data) + len(right_data))
         return total_mse

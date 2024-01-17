@@ -1,6 +1,7 @@
 import numpy as np
 
 from .linear import _Linear
+from src.metrics import mean_squared_error
 
 
 class LinearRegression(_Linear):
@@ -15,9 +16,9 @@ class LinearRegression(_Linear):
         :param y: Targets.
         :return: Mean-squared error.
         """
-        n_examples, _ = x.shape
+        predictions = x @ self.theta
 
-        error = 1 / (n_examples * 2) * np.sum((x @ self.theta - y) ** 2)
+        error = mean_squared_error(y, predictions)
         return error
 
     def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
