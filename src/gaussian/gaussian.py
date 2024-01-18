@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.base import Model
+from src.base import Model, ClassifierMixin
 
 
-class GaussianNB(Model):
+class GaussianNB(Model, ClassifierMixin):
     """
     Gaussian Naive Bayes model for classification tasks.
     """

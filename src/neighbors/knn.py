@@ -1,12 +1,13 @@
-from abc import abstractmethod
+from abc import ABC
 from typing import Union
 
 import numpy as np
 
+from src.base import ClassifierMixin, RegressorMixin
 from src.base import Model
 
 
-class _KNN(Model):
+class _KNearest(Model, ABC):  # Fix adding ABC as parent class.
     """
     K-nearest neighbors abstract class.
     """
@@ -44,12 +45,12 @@ class _KNN(Model):
         return predictions
 
 
-class KNearestClassifier(_KNN):
+class KNearestClassifier(_KNearest, ClassifierMixin):
     """
     KNN for binary/multiclass classification.
     """
 
-    def _predict(self, x: np.ndarray) -> Union[int, float]:
+    def _predict(self, x: np.ndarray) -> Union[np.ndarray, float, int]:
         """
         Find most common neighbor for a data sample.
         :param x: Single data sample (k_nearest)
@@ -59,12 +60,12 @@ class KNearestClassifier(_KNN):
         return most_common
 
 
-class KNearestRegressor(_KNN):
+class KNearestRegressor(_KNearest, RegressorMixin):
     """
     KNN for regression.
     """
 
-    def _predict(self, x: np.ndarray) -> Union[int, float]:
+    def _predict(self, x: np.ndarray) -> Union[np.ndarray, float, int]:
         """
         Find the mean value of neighbors for a data sample.
         :param x: Single data sample (k_nearest)

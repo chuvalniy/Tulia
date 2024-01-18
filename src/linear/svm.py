@@ -1,9 +1,9 @@
 import numpy as np
 
 from .linear import _Linear
+from src.base import ClassifierMixin
 
-
-class SoftSVC(_Linear):
+class SoftSVC(_Linear, ClassifierMixin):
     """
     Soft margin Support Vector Machines (classification).
     """
