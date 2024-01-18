@@ -1,7 +1,9 @@
 import numpy as np
 
-from .linear import _Linear
 from src.base import ClassifierMixin
+from src.metrics import hinge_loss
+from .linear import _Linear
+
 
 class SoftSVC(_Linear, ClassifierMixin):
     """
@@ -39,20 +41,11 @@ class SoftSVC(_Linear, ClassifierMixin):
         :return: Mean-squared error with L2 regularization.
         """
         self._scores = x @ self.theta
-        hinge_loss = np.mean(np.maximum(0, 1 - y * self._scores))  # Core of soft margin SVM.
+        hingeloss = hinge_loss(self._scores, y)
         regularization = self.alpha * np.sum(self.theta ** 2)
 
-        loss = hinge_loss + regularization
+        loss = hingeloss + regularization
         return loss
-
-    def _prepare_targets(self, y: np.ndarray) -> np.ndarray:
-        """
-        Transform targets to be (-1, 1) instead of (0, 1) for concise calculations.
-        :param y: Targets.
-        :return: Transformed targets.
-        """
-        y_copy = np.where(y <= 0, -1, 1)
-        return y_copy
 
     def _calculate_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
