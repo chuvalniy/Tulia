@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from src.base import Model
+from src.base import Model, is_regressor, is_classifier, ClassifierMixin, RegressorMixin
 from src.tree import DecisionTreeClassifier, DecisionTree, DecisionTreeRegressor
 
 
@@ -78,16 +78,26 @@ class _RandomForest(Model):
         """
         pass
 
-    @abstractmethod
     def _initialize_tree(self) -> DecisionTree:
         """
         Create an instance of a decision tree.
         :return: Decision Tree instance.
         """
-        pass
+        if is_regressor(self):
+            return DecisionTreeRegressor(
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                max_features=self.max_features
+            )
+        if is_classifier(self):
+            return DecisionTreeClassifier(
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                max_features=self.max_features
+            )
 
 
-class RandomForestClassifier(_RandomForest):
+class RandomForestClassifier(_RandomForest, ClassifierMixin):
     """
     Random Forest model for binary classification.
     """
@@ -101,19 +111,8 @@ class RandomForestClassifier(_RandomForest):
         most_common = np.bincount(y).argmax()
         return most_common
 
-    def _initialize_tree(self) -> DecisionTree:
-        """
-        Create an instance of a decision tree classifier.
-        :return: Decision Tree classifier.
-        """
-        return DecisionTreeClassifier(
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            max_features=self.max_features
-        )
 
-
-class RandomForestRegressor(_RandomForest):
+class RandomForestRegressor(_RandomForest, RegressorMixin):
     """
     Random Forest model for regression tasks.
     """
@@ -128,14 +127,3 @@ class RandomForestRegressor(_RandomForest):
 
         mean = np.sum(y) / n_samples  # np.mean() was bugged for some reason.
         return mean
-
-    def _initialize_tree(self) -> DecisionTree:
-        """
-        Create an instance of decision tree for regression.
-        :return: Decision Tree regressor.
-        """
-        return DecisionTreeRegressor(
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            max_features=self.max_features
-        )

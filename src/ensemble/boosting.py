@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from src.base import Model
+from src.base import Model, ClassifierMixin, RegressorMixin
 from src.tree import DecisionTreeRegressor
 
 
@@ -41,7 +41,7 @@ class _GradientBoosting(Model):
         """
 
         # Initial prediction
-        self.constant_prediction = self._calculate_initial_prediction(y)
+        self.constant_prediction = np.mean(y)
 
         prediction = self.constant_prediction
         self.trees = []
@@ -58,15 +58,6 @@ class _GradientBoosting(Model):
             prediction = prediction + self.learning_rate * tree.predict(x)
 
             self.trees.append(tree)
-
-    @abstractmethod
-    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
-        """
-        Initial prediction for a gradient boosting.
-        :param y: Targets.
-        :return: Initial predictions.
-        """
-        pass
 
     @abstractmethod
     def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
@@ -96,18 +87,10 @@ class _GradientBoosting(Model):
         return predictions
 
 
-class GradientBoostingRegressor(_GradientBoosting):
+class GradientBoostingRegressor(_GradientBoosting, RegressorMixin):
     """
     Gradient Boosting for regression
     """
-
-    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
-        """
-        Find mean value for the targets.
-        :param y: Targets.
-        :return: Initial predictions.
-        """
-        return np.mean(y)
 
     def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
         """
@@ -128,19 +111,11 @@ class GradientBoostingRegressor(_GradientBoosting):
         return predictions
 
 
-class GradientBoostingClassifier(_GradientBoosting):
+class GradientBoostingClassifier(_GradientBoosting, ClassifierMixin):
     """
     Gradient Boosting for the classification.
     Uses cross-entropy as loss.
     """
-
-    def _calculate_initial_prediction(self, y: np.ndarray) -> np.ndarray:
-        """
-        Find natural logarithm of odds.
-        :param y: Targets.
-        :return: Initial predictions.
-        """
-        return np.zeros_like(y, dtype=np.float64)
 
     def _calculate_loss_gradient(self, y: np.ndarray, predictions: np.ndarray) -> np.ndarray:
         """
