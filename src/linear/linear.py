@@ -62,7 +62,7 @@ class _Linear(Model):
         bias_term = np.ones((n_examples, 1))
         x_copy = np.concatenate((x, bias_term), axis=1)
 
-        predictions = self._calculate_predictions(x_copy)
+        predictions = self._predict(x_copy)
 
         return predictions
 
@@ -86,15 +86,6 @@ class _Linear(Model):
         :return: Transformed targets.
         """
         return y
-
-    @abstractmethod
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
-        """
-        Calculate predictions for input data.
-        :param x: Input data.
-        :return: Predictions.
-        """
-        pass
 
     @abstractmethod
     def _calculate_error(self, x: np.ndarray, y: np.ndarray) -> float:

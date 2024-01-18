@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 import numpy as np
 
@@ -26,3 +27,11 @@ class Model(ABC):
         :return: Test scores.
         """
         pass
+
+    @abstractmethod
+    def _predict(self, x: np.ndarray) -> Union[np.ndarray, float, int]:
+        """
+        Calculate predictions for input data.
+        :param x: Input data.
+        :return: Predictions / Single prediction.
+        """

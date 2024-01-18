@@ -40,17 +40,8 @@ class _KNN(Model):
         euclidian_distance = np.linalg.norm(self._x[:, np.newaxis] - x, axis=2)
 
         k_nearest = np.argsort(euclidian_distance, axis=0)[:self.k_nearest].transpose()  # Shape is (n_examples, k)
-        predictions = np.array([self._calculate_predictions(x) for x in self._y[k_nearest]])
+        predictions = np.array([self._predict(x) for x in self._y[k_nearest]])
         return predictions
-
-    @abstractmethod
-    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
-        """
-        Calculate prediction for a single sample.
-        :param x: Single data sample (k_nearest)
-        :return:
-        """
-        pass
 
 
 class KNearestClassifier(_KNN):
@@ -58,7 +49,7 @@ class KNearestClassifier(_KNN):
     KNN for binary/multiclass classification.
     """
 
-    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
+    def _predict(self, x: np.ndarray) -> Union[int, float]:
         """
         Find most common neighbor for a data sample.
         :param x: Single data sample (k_nearest)
@@ -73,7 +64,7 @@ class KNearestRegressor(_KNN):
     KNN for regression.
     """
 
-    def _calculate_predictions(self, x: np.ndarray) -> Union[int, float]:
+    def _predict(self, x: np.ndarray) -> Union[int, float]:
         """
         Find the mean value of neighbors for a data sample.
         :param x: Single data sample (k_nearest)

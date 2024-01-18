@@ -69,21 +69,13 @@ class _GradientBoosting(Model):
         """
         pass
 
-    @abstractmethod
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
-        """
-        Calculate predictions for input data.
-        :param x: Input data.
-        :return: Predictions.
-        """
-
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predict target feature using pretrained boosting trees.
         :param x: Test data.
         :return: Test predictions.
         """
-        predictions = self._calculate_predictions(x)
+        predictions = self._predict(x)
         return predictions
 
 
@@ -101,7 +93,7 @@ class GradientBoostingRegressor(_GradientBoosting, RegressorMixin):
         """
         return y - predictions
 
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+    def _predict(self, x: np.ndarray) -> np.ndarray:
         n_samples, _ = x.shape
 
         predictions = np.ones(n_samples) * self.constant_prediction
@@ -134,7 +126,7 @@ class GradientBoostingClassifier(_GradientBoosting, ClassifierMixin):
         """
         return 1 / (1 + np.exp(-x))
 
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+    def _predict(self, x: np.ndarray) -> np.ndarray:
         """
         Calculate targets using prediction probability.
         :param x: Input array.
@@ -157,4 +149,3 @@ class GradientBoostingClassifier(_GradientBoosting, ClassifierMixin):
             predictions = predictions + self.learning_rate * tree.predict(x)
 
         return GradientBoostingClassifier.sigmoid(predictions)
-

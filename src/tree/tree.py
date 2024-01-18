@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Union
 
 import numpy as np
 
@@ -91,7 +90,7 @@ class DecisionTree(Model):
 
                 # Stopping criteria.
                 if (depth == self.max_depth - 1) or (n_classes == 1) or (n_samples < self.min_samples_split):
-                    curr_node.prediction = self._calculate_prediction(targets)
+                    curr_node.prediction = self._predict(targets)
                     continue
 
                 curr_node.left = _DecisionTreeNode()
@@ -151,15 +150,6 @@ class DecisionTree(Model):
             return curr_split_quality < best_split_quality
         if is_classifier(self):
             return curr_split_quality > best_split_quality
-
-    @abstractmethod
-    def _calculate_prediction(self, y: np.ndarray) -> Union[int, float]:
-        """
-        Find the prediction for a leaf node for a decision tree.
-        :param y: Targets.
-        :return: Most common class.
-        """
-        pass
 
     @abstractmethod
     def _calculate_criterion(self, x_col: np.ndarray, y: np.ndarray, threshold: float) -> float:
@@ -254,7 +244,7 @@ class DecisionTreeClassifier(DecisionTree, ClassifierMixin):
 
         return entropy
 
-    def _calculate_prediction(self, y: np.ndarray) -> int:
+    def _predict(self, y: np.ndarray) -> int:
         """
         Find the most common class in the array of targets.
         :param y: Targets.
@@ -293,7 +283,7 @@ class DecisionTreeRegressor(DecisionTree, RegressorMixin):
         total_mse = (len(left_data) * left_mse + len(right_data) * right_mse) / (len(left_data) + len(right_data))
         return total_mse
 
-    def _calculate_prediction(self, y: np.ndarray) -> float:
+    def _predict(self, y: np.ndarray) -> float:
         """
         Find the mean value for a 'y' and use as prediction for a leaf node.
         :param y: Targets (leaf node).

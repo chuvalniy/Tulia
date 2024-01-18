@@ -36,24 +36,19 @@ class GaussianNB(Model):
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
-        Goes through each data example and gives prediction for a class using calculated
-        probability in the helper function.
+        Predict class labels.
         :param x: Array of test data (batch_size, n_features)
         :return: Numpy array with class predictions (batch_size, )
         """
-        out = []
+        predictions = [self._predict(x_row) for x_row in x]
 
-        for x_row in x:
-            probabilities = self._calculate_class_probabilities(x_row)
-            out.append(int(max(probabilities, key=probabilities.get)))
+        return np.array(predictions)
 
-        return np.array(out)
-
-    def _calculate_class_probabilities(self, x: np.ndarray) -> dict:
+    def _predict(self, x: np.ndarray) -> int:
         """
-        Helper function to calculate probability for each class using Gaussian formula.
+        Helper function to predict label for a class using Gaussian formula.
         :param x: Single example of training data
-        :return: Dictionary of class probabilities for a single data example.
+        :return: Predicted label.
         """
         probabilities = {}
         for cls in self.classes:
@@ -66,4 +61,5 @@ class GaussianNB(Model):
             exp = np.exp(-((x - means) ** 2) / (2 * vars + self.eps))
             probabilities[cls] = np.prod(coef * exp) * class_prob
 
-        return probabilities
+        prediction = int(max(probabilities, key=probabilities.get))
+        return prediction

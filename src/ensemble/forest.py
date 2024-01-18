@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import numpy as np
 
 from src.base import Model, is_regressor, is_classifier, ClassifierMixin, RegressorMixin
@@ -51,7 +49,7 @@ class _RandomForest(Model):
         forest_preds = np.array([tree.predict(x) for tree in self.decision_trees])  # Shape is (n_trees, n_samples)
         forest_preds = np.swapaxes(forest_preds, axis1=0, axis2=1)  # Swap axes to be (n_samples, n_trees)
 
-        predictions = np.array([self._calculate_prediction(tree_pred) for tree_pred in forest_preds])
+        predictions = np.array([self._predict(tree_pred) for tree_pred in forest_preds])
         return predictions
 
     def _bootstrap_dataset(self, x: np.ndarray, y: np.ndarray) -> (np.ndarray, np.ndarray):
@@ -68,15 +66,6 @@ class _RandomForest(Model):
         x_new, y_new = x[indices], y[indices]
 
         return x_new, y_new
-
-    @abstractmethod
-    def _calculate_prediction(self, y: np.ndarray) -> int:
-        """
-        Interface method for calculating prediction.
-        :param y: Targets.
-        :return: Predictions.
-        """
-        pass
 
     def _initialize_tree(self) -> DecisionTree:
         """
@@ -102,7 +91,7 @@ class RandomForestClassifier(_RandomForest, ClassifierMixin):
     Random Forest model for binary classification.
     """
 
-    def _calculate_prediction(self, y: np.ndarray) -> int:
+    def _predict(self, y: np.ndarray) -> int:
         """
         Find the most common class in the array of targets.
         :param y: Targets.
@@ -117,7 +106,7 @@ class RandomForestRegressor(_RandomForest, RegressorMixin):
     Random Forest model for regression tasks.
     """
 
-    def _calculate_prediction(self, y: np.ndarray) -> int:
+    def _predict(self, y: np.ndarray) -> int:
         """
         Find the mean value for an input array.
         :param y: Targets (leaf node).

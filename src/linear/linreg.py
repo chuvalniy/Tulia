@@ -1,10 +1,11 @@
 import numpy as np
 
 from .linear import _Linear
+from src.base import RegressorMixin
 from src.metrics import mean_squared_error
 
 
-class LinearRegression(_Linear):
+class LinearRegression(_Linear, RegressorMixin):
     """
     Vanilla Linear Regression.
     """
@@ -33,7 +34,7 @@ class LinearRegression(_Linear):
         dtheta = 1 / n_examples * np.sum((x @ self.theta - y)[:, np.newaxis] * x, axis=0)
         return dtheta
 
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+    def _predict(self, x: np.ndarray) -> np.ndarray:
         """
         Make predictions for a regression linear model.
         :param x: Input data.

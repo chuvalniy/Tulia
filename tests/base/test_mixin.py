@@ -1,9 +1,14 @@
+from typing import Union
+
 import numpy as np
 
 from src.base import Model, ClassifierMixin, RegressorMixin, is_regressor, is_classifier
 
 
 class BaseModel(Model):
+
+    def _predict(self, x: np.ndarray) -> Union[np.ndarray, float]:
+        pass
 
     def fit(self, x: np.ndarray, y: np.ndarray):
         pass

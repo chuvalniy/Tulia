@@ -20,7 +20,7 @@ class SoftSVC(_Linear):
         self.alpha = alpha
         self._scores = None
 
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+    def _predict(self, x: np.ndarray) -> np.ndarray:
         """
         Make predictions.
         :param x: Input data.

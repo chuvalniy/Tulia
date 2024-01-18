@@ -1,9 +1,10 @@
 import numpy as np
 
 from .linear import _Linear
+from src.base import ClassifierMixin
 
 
-class LogisticRegression(_Linear):
+class LogisticRegression(_Linear, ClassifierMixin):
     """
     Logistic Regression (Classification)
     Currently implemented only binary classification.
@@ -21,7 +22,7 @@ class LogisticRegression(_Linear):
         self.eps = eps
         self._logits = None
 
-    def _calculate_predictions(self, x: np.ndarray) -> np.ndarray:
+    def _predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predict class label using sigmoid function.
         :param x: Input data.
