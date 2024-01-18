@@ -3,7 +3,7 @@ from typing import Union
 
 import numpy as np
 
-from src.base import Model
+from src.base import Model, is_regressor, is_classifier, RegressorMixin, ClassifierMixin
 from src.metrics import mean_squared_error
 
 
@@ -117,7 +117,7 @@ class DecisionTree(Model):
         """
 
         best_feature_idx, best_threshold = None, None
-        best_split_quality = self._initialize_split_quality()  # Maybe rework in a better way.
+        best_split_quality = self._initial_split_quality()  # Maybe rework in a better way.
         for feat_idx in feature_idxs:
             x_col = x[:, feat_idx]
 
@@ -132,23 +132,25 @@ class DecisionTree(Model):
 
         return best_feature_idx, best_threshold
 
-    @abstractmethod
-    def _initialize_split_quality(self) -> float:
+    def _initial_split_quality(self) -> float:
         """
-        Interface for a helper function to initialize variable depending on whether
-        it's a classification or regression task.
-        :return:
+        Initialize split quality depending on the task.
+        :return: Initial split quality.
         """
-        pass
+        if is_regressor(self):
+            return float('inf')
+        if is_classifier(self):
+            return 0.0
 
-    @abstractmethod
     def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
         """
-        Interface for a helper function to compare two split qualities depending on whether
-        it's a classification or regression task.
-        :return:
+        Compare split quality depending on the task.
+        :return: True if the current split quality is better else False.
         """
-        pass
+        if is_regressor(self):
+            return curr_split_quality < best_split_quality
+        if is_classifier(self):
+            return curr_split_quality > best_split_quality
 
     @abstractmethod
     def _calculate_prediction(self, y: np.ndarray) -> Union[int, float]:
@@ -195,7 +197,7 @@ class DecisionTree(Model):
         return self._dfs(x_sample, root.right)
 
 
-class DecisionTreeClassifier(DecisionTree):
+class DecisionTreeClassifier(DecisionTree, ClassifierMixin):
     """
     Decision Tree for a binary classification.
     """
@@ -261,22 +263,8 @@ class DecisionTreeClassifier(DecisionTree):
         most_common = np.bincount(y).argmax()
         return most_common
 
-    def _initialize_split_quality(self) -> float:
-        """
-        Initialize split quality for a classification task.
-        :return: Lowest possible information gain.
-        """
-        return 0.0
 
-    def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
-        """
-        Compare if current split quality is better.
-        :return: Boolean.
-        """
-        return curr_split_quality > best_split_quality
-
-
-class DecisionTreeRegressor(DecisionTree):
+class DecisionTreeRegressor(DecisionTree, RegressorMixin):
     """
     Decision Tree for regression based on mean-squared error.
     """
@@ -311,21 +299,4 @@ class DecisionTreeRegressor(DecisionTree):
         :param y: Targets (leaf node).
         :return: Mean value of 'y'.
         """
-        n_samples = y.shape[0]
-
-        mean = np.sum(y) / n_samples  # np.mean() was bugged for some reason.
-        return mean
-
-    def _initialize_split_quality(self) -> float:
-        """
-        Initialize split quality for a regression task.
-        :return: Infinity as the highest possible value for an initial error.
-        """
-        return float('inf')
-
-    def _compare_split_quality(self, best_split_quality: float, curr_split_quality: float) -> bool:
-        """
-        Compare if the current mean-squared error is lower.
-        :return: Boolean.
-        """
-        return curr_split_quality < best_split_quality
+        return np.mean(y)
