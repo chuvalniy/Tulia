@@ -2,6 +2,7 @@ import numpy as np
 
 from .linear import _Linear
 from src.base import ClassifierMixin
+from src.metrics import log_loss
 
 
 class LogisticRegression(_Linear, ClassifierMixin):
@@ -40,11 +41,9 @@ class LogisticRegression(_Linear, ClassifierMixin):
         :param y:
         :return:
         """
-        n_examples, _ = x.shape
 
         self._logits = 1 / (1 + np.exp(-x @ self.theta))
-        error = -np.sum(
-            y * np.log(self._logits + self.eps) + (1 - y) * np.log(1 - self._logits + self.eps)) / n_examples
+        error = log_loss(y, self._logits)
 
         return error
 
