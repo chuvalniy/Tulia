@@ -1,5 +1,5 @@
 from src.linear import LogisticRegression
-from tests.base.config import dataset_classification, check_fit_predict  # noqa: F401
+from tests.config import dataset_classification, check_fit_predict  # noqa: F401
 
 
 def test_logistic_regression(dataset_classification):

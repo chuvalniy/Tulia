@@ -1,5 +1,5 @@
 from src.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
-from tests.base.config import dataset_regression, dataset_classification, check_fit_predict  # noqa: F401
+from tests.config import dataset_regression, dataset_classification, check_fit_predict  # noqa: F401
 
 
 def test_gradient_boosting_regression(dataset_regression):

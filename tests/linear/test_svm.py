@@ -1,5 +1,5 @@
 from src.linear import SoftSVC
-from tests.base.config import dataset_classification, check_fit_predict  # noqa: F401
+from tests.config import dataset_classification, check_fit_predict  # noqa: F401
 
 
 def test_soft_svm_classifier(dataset_classification):

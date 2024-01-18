@@ -1,5 +1,5 @@
 from src.ensemble import RandomForestClassifier, RandomForestRegressor
-from tests.base.config import dataset_regression, dataset_classification, check_fit_predict  # noqa: F401
+from tests.config import dataset_regression, dataset_classification, check_fit_predict  # noqa: F401
 
 
 def test_random_forest_regression(dataset_regression):
