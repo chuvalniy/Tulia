@@ -51,3 +51,13 @@ def test_mse_decimal_numbers():
     mse = mean_squared_error(y_true, y_pred)
 
     assert np.isclose(expected_mse, mse, atol=1e-5, rtol=1e-5)
+
+
+def test_mse_with_outliers():
+    y_true = np.array([10, 20, 30, 40, 135])
+    y_pred = np.array([15, 25, 35, 45, 55])
+
+    expected_mse = 650.0
+    mse = mean_squared_error(y_true, y_pred)
+
+    assert np.isclose(expected_mse, mse, atol=1e-5, rtol=1e-5)
