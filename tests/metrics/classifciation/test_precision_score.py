@@ -53,7 +53,7 @@ def test_precision_all_true():
     assert np.isclose(expected_precision, precision, atol=1e-5, rtol=1e-5)
 
 
-def test_recall_varied_true():
+def test_precision_varied_true():
     y_true = np.array([1, 0, 1, 0, 1])
     y_pred = np.array([1, 1, 0, 1, 1])
 

@@ -71,3 +71,21 @@ def precision_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     precision = true_positives / (true_positives + false_positives)
     return precision
+
+
+def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Calculate F1 score for predictions.
+    :param y_true: Target labels (n_samples, ).
+    :param y_pred: Target predictions (n_samples, ).
+    :return: F1 score (float).
+    """
+
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+
+    if precision == 0.0 and recall == 0.0:
+        return 0.0
+
+    f1 = 2 * precision * recall / (precision + recall)
+    return f1
