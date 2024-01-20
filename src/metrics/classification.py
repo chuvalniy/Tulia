@@ -35,3 +35,18 @@ def hinge_loss(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     y = np.where(y_true <= 0, -1, 1)
     loss = np.mean(np.maximum(0, 1 - y_pred * y))
     return loss
+
+
+def recall_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Calculate recall score for predictions.
+    :param y_true: Target labels (n_samples, ).
+    :param y_pred: Target predictions (n_samples, ).
+    :return: Recall score (float).
+    """
+
+    true_positives = np.sum(y_true * y_pred)
+    false_negatives = np.sum(y_true * (1 - y_pred))
+
+    recall = true_positives / (false_negatives + true_positives)
+    return recall
