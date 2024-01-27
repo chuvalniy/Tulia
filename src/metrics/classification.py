@@ -100,28 +100,30 @@ def roc_curve(y_true: np.ndarray, y_pred: np.ndarray, threshold_step: float = 0.
     :param threshold_step: Threshold step for calculating rates (float).
     :return: True positive rates (threshold_steps, ), False positive rates (threshold_steps, ).
     """
-    thresholds = np.arange(0.1, 1, threshold_step)
+    thresholds = np.arange(0.1, 1.0, threshold_step)
 
     tpr = np.zeros_like(thresholds)
     fpr = np.zeros_like(thresholds)
 
     for i, threshold in enumerate(thresholds):
-        predictions = np.where(y_pred >= threshold, 1, 0)
+        predictions = np.array(y_pred >= threshold).astype(int)
 
         # Calculate true positive rates.
-        true_positives = np.sum(y_true * predictions)
-        false_negatives = np.sum(y_true * (1 - predictions))
-        if true_positives == 0 and false_negatives == 0:
+        tp = np.sum((y_true == 1) & (predictions == 1))
+        fn = np.sum((y_true == 1) & (predictions == 0))
+        if tp == 0 and fn == 0:
             tpr[i] = 0.0
         else:
-            tpr[i] = true_positives / (true_positives + false_negatives)
+            tpr[i] = tp / (tp + fn)
 
         # Calculate false positive rates.
-        true_negatives = np.sum((1 - y_true) * (1 - predictions))
-        false_positives = np.sum((1 - y_true) * predictions)
-        if false_positives == 0 and true_negatives == 0:
+        tn = np.sum((y_true == 0) & (predictions == 0))
+        fp = np.sum((y_true == 0) & (predictions == 1))
+        if fp == 0 and tn == 0:
             fpr[i] = 0.0
         else:
-            fpr[i] = true_negatives / (true_negatives + false_positives)
+            fpr[i] = fp / (tn + fp)
 
     return tpr, fpr
+
+
