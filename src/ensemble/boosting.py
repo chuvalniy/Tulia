@@ -94,6 +94,11 @@ class GradientBoostingRegressor(_GradientBoosting, RegressorMixin):
         return y - predictions
 
     def _predict(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculate targets using tree predictions.
+        :param x: Input array.
+        :return: Predictions.
+        """
         n_samples, _ = x.shape
 
         predictions = np.ones(n_samples) * self.constant_prediction
