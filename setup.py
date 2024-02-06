@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.2.1'
+VERSION = '0.3.0'
 DESCRIPTION = 'numpy based machine learning package with sklearn-like API'
 
 with open("README.md", "r") as fn:
