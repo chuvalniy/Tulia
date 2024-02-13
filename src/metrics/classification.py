@@ -94,7 +94,6 @@ def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 def roc_curve(y_true: np.ndarray, y_pred: np.ndarray) -> (np.ndarray, np.ndarray):
     """
     Calculate ROC curve values.
-
     :param y_true: Target labels (n_samples, ).
     :param y_pred: Predictions probability (n_samples, ).
     :return:
@@ -130,3 +129,21 @@ def roc_curve(y_true: np.ndarray, y_pred: np.ndarray) -> (np.ndarray, np.ndarray
             fpr[i] = fp / (tn + fp)
 
     return tpr, fpr, thresholds
+
+
+def roc_auc_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Calculate ROC-AUC score using trapezoidal rule.
+    :param y_true: Target labels (n_samples, ).
+    :param y_pred: Predictions probability (n_samples, ).
+    :return: ROC-AUC score.
+    """
+
+    tpr, fpr, _ = roc_curve(y_true, y_pred)
+
+    shifted_tpr = np.roll(tpr, shift=1)
+    shifted_tpr[0] = 0
+
+    height = np.diff(fpr, n=1, prepend=0)
+    auc = np.sum((tpr + shifted_tpr) / 2 * height)
+    return auc.item()
