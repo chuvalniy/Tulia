@@ -91,16 +91,21 @@ def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return f1
 
 
-def roc_curve(y_true: np.ndarray, y_pred: np.ndarray, threshold_step: float = 0.1) -> (np.ndarray, np.ndarray):
+def roc_curve(y_true: np.ndarray, y_pred: np.ndarray) -> (np.ndarray, np.ndarray):
     """
     Calculate ROC curve values.
 
     :param y_true: Target labels (n_samples, ).
-    :param y_pred: Target predictions probabilities (n_samples, ).
-    :param threshold_step: Threshold step for calculating rates (float).
-    :return: True positive rates (threshold_steps, ), False positive rates (threshold_steps, ).
+    :param y_pred: Predictions probability (n_samples, ).
+    :return:
+        True positive rates (n_thresholds, ),
+        False positive rates (n_thresholds, ).
+        Thresholds (n_thresholds, ).
     """
-    thresholds = np.arange(0.1, 1.0, threshold_step)
+    unique_probabilities = np.unique(y_pred)
+    unique_probabilities = np.append(unique_probabilities, [2])  # Include upper bound
+
+    thresholds = -np.sort(-unique_probabilities)
 
     tpr = np.zeros_like(thresholds)
     fpr = np.zeros_like(thresholds)
@@ -124,6 +129,4 @@ def roc_curve(y_true: np.ndarray, y_pred: np.ndarray, threshold_step: float = 0.
         else:
             fpr[i] = fp / (tn + fp)
 
-    return tpr, fpr
-
-
+    return tpr, fpr, thresholds
